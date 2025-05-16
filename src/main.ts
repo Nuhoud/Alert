@@ -20,11 +20,12 @@ async function bootstrap() {
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.GRPC,
     options: {
-      package: 'whatsapp',
-      protoPath: join(__dirname, '..', 'src', 'whatsapp-grpc', 'proto', 'whatsapp.proto'),
-      url: process.env.GRPC_URL || '0.0.0.0:50051',
+      package: 'alerts',
+      protoPath: join(__dirname, 'proto/alerts.proto'),
+      url: '0.0.0.0:50051',
     },
   });
+  
 
   // Start all microservices (gRPC)
   await app.startAllMicroservices();

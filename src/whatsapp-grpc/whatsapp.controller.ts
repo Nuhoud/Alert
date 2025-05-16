@@ -1,17 +1,9 @@
 import { Controller, Get, Render, Res } from '@nestjs/common';
 import { GrpcMethod } from '@nestjs/microservices';
 import { WhatsappService } from './whatsapp.service';
+import {MessageResponse,MessageRequest} from './interfaces/whatsapp.interface'
 import { Response } from 'express';
 
-interface SendMessageRequest {
-  mobileNumber: string;
-  text: string;
-}
-
-interface SendMessageResponse {
-  ok: boolean;
-  message: string;
-}
 
 @Controller('whatsapp')
 export class WhatsappController {
@@ -33,8 +25,9 @@ export class WhatsappController {
     return res.render('qr', { img: qrImage });
   }
 
-  @GrpcMethod('WhatsApp', 'SendMessage')
-  async sendMessage(request: SendMessageRequest,metadata: any,): Promise<SendMessageResponse> {
+  @GrpcMethod('WhatsAppService', 'SendMessage')
+  async sendMessage(request: MessageRequest,metadata: any,): Promise<MessageResponse> {
+    console.log('here')
     return this.whatsappService.sendMessage(request, metadata);
   }
 }

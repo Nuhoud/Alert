@@ -1,5 +1,6 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { Client, LocalAuth } from 'whatsapp-web.js';
+import { MessageRequest,MessageResponse } from './interfaces/whatsapp.interface'
 import * as qrcode from 'qrcode';
 import * as dotenv from 'dotenv';
 dotenv.config();
@@ -48,7 +49,7 @@ export class WhatsappService implements OnModuleInit {
     });
   }
 
-  async sendMessage(request: { mobileNumber: string; text: string }, metadata: any) {
+  async sendMessage(request: MessageRequest, metadata: any) {
     const password = metadata.get('x-password')?.[0];
     
     if (password !== process.env.WHATSAPP_API_PASSWORD) {
@@ -58,11 +59,11 @@ export class WhatsappService implements OnModuleInit {
       };
     }
 
-    const { mobileNumber, text } = request;
+    const { mobileNumber, message } = request;
     const chatId = mobileNumber.endsWith('@c.us') ? mobileNumber : `${mobileNumber}@c.us`;
 
     try {
-      await this.session.sendMessage(chatId, text);
+      await this.session.sendMessage(chatId, message);
       return { ok: true, message: 'Message sent' };
     } catch (err) {
       return { ok: false, message: err.message };
