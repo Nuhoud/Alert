@@ -27,7 +27,16 @@ export class WhatsappController {
 
   @GrpcMethod('WhatsAppService', 'SendMessage')
   async sendMessage(request: MessageRequest,metadata: any,): Promise<MessageResponse> {
-    console.log('here')
-    return this.whatsappService.sendMessage(request, metadata);
+
+    const password = metadata.get('x-password')?.[0];
+    
+    if (password !== process.env.WHATSAPP_API_PASSWORD) {
+      return {
+        ok: false,
+        message: 'Invalid password',
+      };
+    }
+
+    return this.whatsappService.sendMessage(request);
   }
 }

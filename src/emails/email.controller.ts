@@ -12,4 +12,5 @@ export class EmailController {
   async sendEmail(request: EmailRequest,): Promise<EmailResponse> {
     return this.emailService.SendMail(request);
   }
+  
 }

@@ -49,15 +49,7 @@ export class WhatsappService implements OnModuleInit {
     });
   }
 
-  async sendMessage(request: MessageRequest, metadata: any) {
-    const password = metadata.get('x-password')?.[0];
-    
-    if (password !== process.env.WHATSAPP_API_PASSWORD) {
-      return {
-        ok: false,
-        message: 'Invalid password',
-      };
-    }
+  async sendMessage(request: MessageRequest) {
 
     const { mobileNumber, message } = request;
     const chatId = mobileNumber.endsWith('@c.us') ? mobileNumber : `${mobileNumber}@c.us`;
@@ -69,4 +61,5 @@ export class WhatsappService implements OnModuleInit {
       return { ok: false, message: err.message };
     }
   }
+  
 }

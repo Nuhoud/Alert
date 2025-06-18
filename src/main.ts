@@ -26,9 +26,23 @@ async function bootstrap() {
     },
   });
   
-
-  // Start all microservices (gRPC)
-  await app.startAllMicroservices();
+  try {
+    const kafkaMicroservice = app.connectMicroservice<MicroserviceOptions>({
+      transport: Transport.KAFKA,
+      options: {
+        client: {
+          clientId: 'alert',
+          brokers: [`${process.env.KAFKA_URL}`],
+        },
+        consumer: {
+          groupId: 'alert-consumer',
+        },
+      },
+    });
+    await app.startAllMicroservices();
+  } catch (e) {
+    console.log('Kafka connection failed, continuing without it');
+  }
   
   // Start HTTP server
   await app.listen(process.env.PORT ?? 3000);
