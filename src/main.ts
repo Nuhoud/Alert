@@ -11,7 +11,8 @@ dotenv.config();
 async function bootstrap() {
   // Create the HTTP application
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
-  
+  app.enableCors();
+
   // Configure view engine
   app.setViewEngine('ejs');
   app.setBaseViewsDir(join(__dirname, '..', 'views'));
