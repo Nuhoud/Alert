@@ -23,7 +23,7 @@ async function bootstrap() {
     options: {
       package: 'alerts',
       protoPath: join(__dirname, 'proto/alerts.proto'),
-      url: '0.0.0.0:50051',
+      url: process.env.GRPC_URL || '0.0.0.0:50051',
     },
   });
   
@@ -33,7 +33,7 @@ async function bootstrap() {
       options: {
         client: {
           clientId: 'alert',
-          brokers: [`${process.env.KAFKA_URL}`],
+          brokers: [process.env.KAFKA_URL || 'localhost:9092'],
         },
         consumer: {
           groupId: 'alert-consumer',
@@ -46,9 +46,9 @@ async function bootstrap() {
   }
   
   // Start HTTP server
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(process.env.PORT || 8080);
   
-  console.log(`Application is running on: ${await app.getUrl()}`);
+  console.log(`Application is running on: ${await app.getUrl()}` );
   console.log(`gRPC server is running on: ${process.env.GRPC_URL || '0.0.0.0:50051'}`);
 }
 bootstrap();
