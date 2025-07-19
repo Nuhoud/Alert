@@ -11,6 +11,7 @@ export class ApplicationController {
   // tell User that his application has been created
   @EventPattern('job.application.created')
   async sumbitApplication(@Payload() message: any) {
+    console.log("kafka created message");
     await this.applicationService.sumbitApplicationNotifications(message);
   }
 
