@@ -125,6 +125,8 @@ export class ApplicationService {
     async sendApplicationStatusToUser(message: any) {
       const appName = 'Nuhoud';
     
+      //console.log("message",message);
+
       const { 
         status, 
         employerNote, 
@@ -132,7 +134,9 @@ export class ApplicationService {
         jobTitle, 
         userSnap 
       } = message;
-    
+
+      console.log("status",status);
+
       const promises: Promise<any>[] = [];
     
       // Email Notification
