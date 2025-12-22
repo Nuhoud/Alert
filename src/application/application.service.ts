@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { WhatsappService } from '../whatsapp-grpc/whatsapp.service';
+import { WhatsappService } from '../whatsapp/whatsapp.service';
 import { EmailService } from '../emails/email.service'
+import { FcmService } from '../firebase/firebase.service';
 
 /* 
         jobOfferId,
@@ -27,7 +28,8 @@ import { EmailService } from '../emails/email.service'
 export class ApplicationService {
     constructor(
         private emailService: EmailService,
-        private whatsappService: WhatsappService
+        private whatsappService: WhatsappService,
+        private fcmService: FcmService
     ) {}
 
 
@@ -181,6 +183,30 @@ export class ApplicationService {
       }
     
       await Promise.all(promises);
+    }
+
+    async sendApplicationNotCreatedNotification(message: any) {
+      const { userId, reason, jobOfferId, jobTitle, companyName } = message;
+
+      if (!userId) {
+        console.warn('[AlertService] Missing userId for application not created event.');
+        return;
+      }
+
+      const reasonText = reason || 'Your application could not be submitted.';
+      const title = 'Application not submitted';
+      const body = jobTitle
+        ? `Your application for "${jobTitle}"${companyName ? ` at ${companyName}` : ''} could not be submitted. ${reasonText}`
+        : `Your application could not be submitted. ${reasonText}`;
+
+      await this.fcmService.sendToUser(userId, {
+        title,
+        body,
+        data: {
+          reason: reasonText,
+          jobOfferId: jobOfferId ?? '',
+        },
+      });
     }
     
 }

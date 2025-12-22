@@ -23,4 +23,12 @@ export class ApplicationController {
     await this.applicationService.sendApplicationStatusToUser(message);
   }
 
+  // application not created
+  // notify the user with the reason
+  @EventPattern('job.application.notcreated')
+  async handleNotCreated(@Payload() message: any) {
+    console.log("kafka not created message",message);
+    await this.applicationService.sendApplicationNotCreatedNotification(message);
+  }
+
 }
