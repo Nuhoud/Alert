@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import { WhatsappService } from '../whatsapp/whatsapp.service';
 import { EmailService } from '../emails/email.service'
 import { FcmService } from '../firebase/firebase.service';
@@ -41,16 +41,16 @@ export class ApplicationService {
     }
       
     async sendApplicationToEmployer(message: any) {
-      const { employerEmail, title, userSnap, companyName } = message;
-      if (!employerEmail) return;
+      const { employerEmail, employerId, jobTitle, userSnap, companyName, jobOfferId } = message;
     
       const appName = 'Nuhoud';
+      const positionTitle = jobTitle || 'your job';
     
       const html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
-          <h2 style="color: #333; text-align: center;">${appName} – New Job Application</h2>
+          <h2 style="color: #333; text-align: center;">${appName} ƒ?? New Job Application</h2>
           
-          <p style="color: #555; font-size: 16px;">You have received a new application for the job: <b>${title}</b>${companyName ? ` at <b>${companyName}</b>` : ''}.</p>
+          <p style="color: #555; font-size: 16px;">You have received a new application for the job: <b>${positionTitle}</b>${companyName ? ` at <b>${companyName}</b>` : ''}.</p>
     
           <h3 style="color: #444; border-bottom: 1px solid #ccc; padding-bottom: 5px;">Applicant Info</h3>
     
@@ -71,27 +71,39 @@ export class ApplicationService {
           </p>
         </div>
       `;
-    
-      await this.emailService.SendMail({
-        to: employerEmail,
-        subject: `${appName} – New Application for "${title}"`,
-        html,
-      });
+
+      if (employerEmail) {
+        await this.emailService.SendMail({
+          to: employerEmail,
+          subject: `${appName} ƒ?? New Application for "${positionTitle}"`,
+          html,
+        });
+      }
+
+      if (employerId) {
+        await this.fcmService.sendToUser(String(employerId), {
+          title: 'New job application',
+          body: `${userSnap?.name || 'A candidate'} applied for "${positionTitle}"${companyName ? ` at ${companyName}` : ''}.`,
+          data: {
+            screen: '/employer/applications/' + jobOfferId,
+          },
+        });
+      }
     }
-    
-      
+
     async sendApplicationToUser(message: any) {
-      const { userSnap, title, companyName } = message;
+      const { userSnap, jobTitle, companyName, userId, jobOfferId } = message;
       const appName = 'Nuhoud';
       const promises: Promise<any>[] = [];
+      const positionTitle = jobTitle || 'the job';
     
       // Email to User
       if (userSnap.email) {
         const html = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
-            <h2 style="color: #333; text-align: center;">${appName} – Application Confirmation</h2>
+            <h2 style="color: #333; text-align: center;">${appName} â€“ Application Confirmation</h2>
             
-            <p style="color: #555; font-size: 16px;">You have successfully applied to the job: <b>${title}</b>${companyName ? ` at <b>${companyName}</b>` : ''}.</p>
+            <p style="color: #555; font-size: 16px;">You have successfully applied to the job: <b>${positionTitle}</b>${companyName ? ` at <b>${companyName}</b>` : ''}.</p>
     
             <p style="color: #555; font-size: 14px;">We will notify you once the employer takes action on your application.</p>
     
@@ -103,20 +115,30 @@ export class ApplicationService {
     
         promises.push(this.emailService.SendMail({
           to: userSnap.email,
-          subject: `${appName} – Application Submitted`,
+          subject: `${appName} â€“ Application Submitted`,
           html,
         }));
       }
     
       // WhatsApp to User
       if (userSnap.mobile) {
-        const messageText = `✅ You successfully applied for "${title}"${companyName ? ` at ${companyName}` : ''}.`;
+        const messageText = `âœ… You successfully applied for "${positionTitle}"${companyName ? ` at ${companyName}` : ''}.`;
         promises.push(this.whatsappService.sendMessage({
           mobileNumber: userSnap.mobile,
           message: messageText,
         }));
       }
     
+      if (userId) {
+        promises.push(this.fcmService.sendToUser(String(userId), {
+          title: 'Application submitted',
+          body: `You successfully applied for "${positionTitle}"${companyName ? ` at ${companyName}` : ''}.`,
+          data: {
+            screen: '/job-application-details/' + jobOfferId,
+          },
+        }));
+      }
+
       if (!userSnap.email && !userSnap.mobile) {
         console.warn(`[AlertService] User ${message.userId} has no contact method`);
       }
@@ -134,7 +156,9 @@ export class ApplicationService {
         employerNote, 
         companyName, 
         jobTitle, 
-        userSnap 
+        userSnap,
+        userId,
+        jobOfferId
       } = message;
 
       console.log("status",status);
@@ -145,7 +169,7 @@ export class ApplicationService {
       if (userSnap.email) {
         const html = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
-            <h2 style="color: #333; text-align: center;">${appName} – Application Status Update</h2>
+            <h2 style="color: #333; text-align: center;">${appName} â€“ Application Status Update</h2>
     
             <p style="color: #555; font-size: 16px;">The status of your application for the job <b>"${jobTitle}"</b>${companyName ? ` at <b>${companyName}</b>` : ''} has been updated.</p>
     
@@ -163,14 +187,14 @@ export class ApplicationService {
     
         promises.push(this.emailService.SendMail({
           to: userSnap.email,
-          subject: `${appName} – Your Application Status for "${jobTitle}" Has Changed`,
+          subject: `${appName} â€“ Your Application Status for "${jobTitle}" Has Changed`,
           html,
         }));
       }
     
       // WhatsApp Notification
       if (userSnap.mobile) {
-        const msg = `📢 Update on your application:\n\nPosition: ${jobTitle}\nCompany: ${companyName ?? 'N/A'}\nNew Status: ${status}${employerNote ? `\nNote: ${employerNote}` : ''}`;
+        const msg = `ًں“¢ Update on your application:\n\nPosition: ${jobTitle}\nCompany: ${companyName ?? 'N/A'}\nNew Status: ${status}${employerNote ? `\nNote: ${employerNote}` : ''}`;
     
         promises.push(this.whatsappService.sendMessage({
           mobileNumber: userSnap.mobile,
@@ -178,6 +202,16 @@ export class ApplicationService {
         }));
       }
     
+      if (userId) {
+        promises.push(this.fcmService.sendToUser(String(userId), {
+          title: 'Application status update',
+          body: `Your application for "${jobTitle}" is now "${status}".${employerNote ? ` Note: ${employerNote}` : ''}`,
+          data: {
+            screen: '/job-application-details/' + jobOfferId,
+          },
+        }));
+      }
+
       if (!userSnap.email && !userSnap.mobile) {
         console.warn(`[AlertService] Cannot notify user (missing email/mobile) for application status update.`);
       }
@@ -203,10 +237,13 @@ export class ApplicationService {
         title,
         body,
         data: {
-          reason: reasonText,
-          jobOfferId: jobOfferId ?? '',
+          screen: '/job-details/' + jobOfferId,
         },
       });
     }
     
 }
+
+
+
+
