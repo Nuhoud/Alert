@@ -78,6 +78,7 @@ export class ApplicationService {
           subject: `${appName} ƒ?? New Application for "${positionTitle}"`,
           html,
         });
+        console.log(`[ApplicationService] Sent email to employer ${employerEmail} for new application.`);
       }
 
       if (employerId) {
@@ -88,6 +89,7 @@ export class ApplicationService {
             screen: '/employer/applications/' + jobOfferId,
           },
         });
+        console.log(`[ApplicationService] Sent FCM notification to employer ${employerId} for new application.`);
       }
     }
 
@@ -118,6 +120,7 @@ export class ApplicationService {
           subject: `${appName} â€“ Application Submitted`,
           html,
         }));
+        console.log(`[ApplicationService] Queued email to user ${userSnap.email} for application confirmation.`);
       }
     
       // WhatsApp to User
@@ -127,6 +130,7 @@ export class ApplicationService {
           mobileNumber: userSnap.mobile,
           message: messageText,
         }));
+        console.log(`[ApplicationService] Queued WhatsApp message to user ${userSnap.mobile} for application confirmation.`);
       }
     
       if (userId) {
@@ -137,6 +141,7 @@ export class ApplicationService {
             screen: '/job-application-details/' + jobOfferId,
           },
         }));
+        console.log(`[ApplicationService] Queued FCM notification to user ${userId} for application confirmation.`);
       }
 
       if (!userSnap.email && !userSnap.mobile) {
@@ -190,6 +195,8 @@ export class ApplicationService {
           subject: `${appName} â€“ Your Application Status for "${jobTitle}" Has Changed`,
           html,
         }));
+
+        console.log(`[ApplicationService] Queued email to user ${userSnap.email} for application status update.`);
       }
     
       // WhatsApp Notification
@@ -200,6 +207,8 @@ export class ApplicationService {
           mobileNumber: userSnap.mobile,
           message: msg,
         }));
+
+        console.log(`[ApplicationService] Queued WhatsApp message to user ${userSnap.mobile} for application status update.`);
       }
     
       if (userId) {
@@ -210,6 +219,8 @@ export class ApplicationService {
             screen: '/job-application-details/' + jobOfferId,
           },
         }));
+
+        console.log(`[ApplicationService] Queued FCM notification to user ${userId} for application status update.`);
       }
 
       if (!userSnap.email && !userSnap.mobile) {

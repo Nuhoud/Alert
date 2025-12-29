@@ -23,5 +23,3 @@ export class DeviceToken {
 }
 
 export const DeviceTokenSchema = SchemaFactory.createForClass(DeviceToken);
-
-DeviceTokenSchema.index({ token: 1 }, { unique: true });
