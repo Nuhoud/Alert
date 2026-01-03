@@ -10,6 +10,7 @@ export class EmailController {
 
   @GrpcMethod('EmailService', 'SendEmail')
   async sendEmail(request: EmailRequest,): Promise<EmailResponse> {
+    console.log('hit grpc email Controller');
     return this.emailService.SendMail(request);
   }
   

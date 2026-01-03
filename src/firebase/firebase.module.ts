@@ -7,6 +7,10 @@ import { FirebaseController } from './firebase.controller';
 import { FcmService } from './firebase.service';
 import { DeviceToken, DeviceTokenSchema } from './entities/device-token.entity';
 import { MongooseModule } from '@nestjs/mongoose';
+import {
+  Notification,
+  NotificationSchema,
+} from './entities/notification.entity';
 
 async function loadServiceAccount(): Promise<ServiceAccount> {
   const envLocation = process.env.ServiceAccountPath;
@@ -57,7 +61,12 @@ const firebaseAdminProvider = {
 };
 
 @Module({
-  imports: [MongooseModule.forFeature([{ name: DeviceToken.name, schema: DeviceTokenSchema }])],
+  imports: [
+    MongooseModule.forFeature([
+      { name: DeviceToken.name, schema: DeviceTokenSchema },
+      { name: Notification.name, schema: NotificationSchema },
+    ]),
+  ],
   controllers: [FirebaseController],
   providers: [firebaseAdminProvider, FcmService],
   exports: [FcmService, firebaseAdminProvider],

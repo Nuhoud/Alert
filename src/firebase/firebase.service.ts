@@ -8,6 +8,10 @@ import {
   DeviceToken,
   DeviceTokenDocument,
 } from './entities/device-token.entity';
+import {
+  Notification,
+  NotificationDocument,
+} from './entities/notification.entity';
 
 export interface FcmPayload {
   title: string;
@@ -24,6 +28,8 @@ export class FcmService {
     @Inject('FIREBASE_ADMIN') firebaseApp: App,
     @InjectModel(DeviceToken.name)
     private readonly deviceTokenModel: Model<DeviceTokenDocument>,
+    @InjectModel(Notification.name)
+    private readonly notificationModel: Model<NotificationDocument>,
   ) {
     this.messaging = getMessaging(firebaseApp);
   }
@@ -100,6 +106,14 @@ export class FcmService {
     if (!tokens.length) {
       return { success: 0, failure: 0 };
     }
+
+    const onenotification = new this.notificationModel({
+        userId: normalizedUserId,
+        title: payload.title,
+        body: payload.body,
+        data: payload.data,
+    });
+    await onenotification.save();
 
     const response = await this.messaging.sendEachForMulticast({
       tokens,
